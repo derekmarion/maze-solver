@@ -1,4 +1,4 @@
-from graphics import Window, Line, Point
+from graphics import Window, Line, Point, Cell
 
 
 def main() -> None:
@@ -7,6 +7,13 @@ def main() -> None:
     line2 = Line(Point(75, 130), Point(63, 400), win.canvas)
     win.draw_line(line1, "green")
     win.draw_line(line2, "black")
+    cell1 = Cell(
+        _has_right_wall=False,
+        _upper_left=Point(100, 100),
+        _bottom_right=Point(200, 200),
+        _canvas=win.canvas,
+    )
+    win.draw_cell(cell1)
     win.wait_for_close()
 
 

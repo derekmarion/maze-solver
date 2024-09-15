@@ -1,5 +1,5 @@
 from tkinter import Tk, BOTH, Canvas
-from typing import Any
+from dataclasses import dataclass
 
 
 class Point:
@@ -14,6 +14,7 @@ class Point:
     @property
     def y(self) -> int:
         return self._y
+
 
 class Line:
     def __init__(self, point1: Point, point2: Point, canvas: Canvas) -> None:
@@ -32,6 +33,55 @@ class Line:
             fill=fill_color,
             width=2,
         )
+
+
+@dataclass(kw_only=True)
+class Cell:
+    _has_left_wall: bool = True
+    _has_right_wall: bool = True
+    _has_bottom_wall: bool = True
+    _has_top_wall: bool = True
+    _upper_left: Point
+    _bottom_right: Point
+    _canvas: Canvas
+
+    def draw(self) -> None:
+        if self._has_left_wall:
+            self._canvas.create_line(
+                self._upper_left.x,
+                self._upper_left.y,
+                self._upper_left.x,
+                self._bottom_right.y,
+                fill="black",
+                width=2,
+            )
+        if self._has_bottom_wall:
+            self._canvas.create_line(
+                self._upper_left.x,
+                self._bottom_right.y,
+                self._bottom_right.x,
+                self._bottom_right.y,
+                fill="black",
+                width=2,
+            )
+        if self._has_right_wall:
+            self._canvas.create_line(
+                self._bottom_right.x,
+                self._bottom_right.y,
+                self._bottom_right.x,
+                self._upper_left.y,
+                fill="black",
+                width=2,
+            )
+        if self._has_top_wall:
+            self._canvas.create_line(
+                self._bottom_right.x,
+                self._upper_left.y,
+                self._upper_left.x,
+                self._upper_left.y,
+                fill="black",
+                width=2,
+            )
 
 
 class Window:
@@ -65,19 +115,5 @@ class Window:
     def draw_line(self, line: Line, fill_color: str):
         line.draw(fill_color=fill_color)
 
-
-
-
-
-class Cell:
-    def __init__(
-        self,
-        has_left_wall: bool,
-        has_right_wall: bool,
-        has_top_wall: bool,
-        has_bottom_wall: bool,
-        point1: Point,
-        point2: Point,
-        window: Window,  # Must be parent Window instance to which the cell belongs
-    ) -> None:
-        pass
+    def draw_cell(self, cell: Cell):
+        cell.draw()
