@@ -13,7 +13,14 @@ def main() -> None:
         _bottom_right=Point(200, 200),
         _canvas=win.canvas,
     )
+    cell2 = Cell(
+        _upper_left=Point(300, 300),
+        _bottom_right=Point(400, 400),
+        _canvas=win.canvas,
+    )
     win.draw_cell(cell1)
+    win.draw_cell(cell2)
+    win.draw_move(cell1, cell2)
     win.wait_for_close()
 
 

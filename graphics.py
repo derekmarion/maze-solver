@@ -45,6 +45,16 @@ class Cell:
     _bottom_right: Point
     _canvas: Canvas
 
+    def __post_init__(self):
+        self._center = Point(
+            (self._bottom_right.x + self._upper_left.x) / 2,
+            (self._upper_left.y + self._bottom_right.y) / 2,
+        )
+
+    @property
+    def center(self):
+        return self._center
+
     def draw(self) -> None:
         if self._has_left_wall:
             self._canvas.create_line(
@@ -83,6 +93,26 @@ class Cell:
                 width=2,
             )
 
+    def draw_move(self, to_cell: 'Cell', undo=False):
+        if undo:
+            self._canvas.create_line(
+                self.center.x,
+                self.center.y,
+                to_cell.center.x,
+                to_cell.center.y,
+                fill="gray",
+                width=2,
+            )
+        else:
+            self._canvas.create_line(
+                self.center.x,
+                self.center.y,
+                to_cell.center.x,
+                to_cell.center.y,
+                fill="red",
+                width=2,
+            )
+
 
 class Window:
     def __init__(self, width: int, height: int) -> None:
@@ -117,3 +147,6 @@ class Window:
 
     def draw_cell(self, cell: Cell):
         cell.draw()
+
+    def draw_move(self, cell1: Cell, cell2: Cell, undo=False):
+        cell1.draw_move(cell2, undo=undo)
