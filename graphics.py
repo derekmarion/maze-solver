@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 from dataclasses import dataclass
+import time
 
 
 class Point:
@@ -41,8 +42,8 @@ class Cell:
     _has_right_wall: bool = True
     _has_bottom_wall: bool = True
     _has_top_wall: bool = True
-    _upper_left: Point
-    _bottom_right: Point
+    _upper_left: Point = Point(0, 0)
+    _bottom_right: Point = Point(0, 0)
     _canvas: Canvas
 
     def __post_init__(self):
@@ -93,7 +94,7 @@ class Cell:
                 width=2,
             )
 
-    def draw_move(self, to_cell: 'Cell', undo=False):
+    def draw_move(self, to_cell: "Cell", undo=False):
         if undo:
             self._canvas.create_line(
                 self.center.x,
@@ -150,3 +151,50 @@ class Window:
 
     def draw_move(self, cell1: Cell, cell2: Cell, undo=False):
         cell1.draw_move(cell2, undo=undo)
+
+
+@dataclass
+class Maze:
+    """Renders a maze and all cells it contains based on cell
+    wall length and width and number of rows/columns"""
+
+    _top_left: Point
+    _num_rows: int
+    _num_cols: int
+    _cell_size_x: int
+    _cell_size_y: int
+    _win: Window
+    _cells: list = None
+
+    def __post_init__(self):
+        self._cells = []
+        self._create_cells()
+
+    def _create_cells(self):
+        for row in range(0, self._num_rows):
+            self._cells.append(
+                [Cell(_canvas=self._win.canvas) for x in range(0, self._num_cols)]
+            )
+
+        for i, row in enumerate(self._cells):
+            for j, column in enumerate(row):
+                self._draw_cell(i, j)
+
+    def _draw_cell(self, i, j):
+        # calculate x/y position of cell based on i, j and cell_size
+        upper_left_x = self._top_left.x + self._cell_size_x * j
+        upper_left_y = self._top_left.y + self._cell_size_y * i
+        cell = Cell(
+            _upper_left=Point(upper_left_x, upper_left_y),
+            _bottom_right=Point(
+                upper_left_x + self._cell_size_x, upper_left_y + self._cell_size_y
+            ),
+            _canvas=self._win.canvas,
+        )
+        self._cells[i][j] = cell
+        self._cells[i][j].draw()
+        self._animate()
+
+    def _animate(self):
+        self._win.redraw()
+        time.sleep(0.05)
