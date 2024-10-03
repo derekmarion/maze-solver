@@ -45,6 +45,7 @@ class Cell:
     _upper_left: Point = Point(0, 0)
     _bottom_right: Point = Point(0, 0)
     _canvas: Canvas
+    _cell_walls = {"top": None, "right": None, "bottom": None, "left": None}
 
     def __post_init__(self):
         self._center = Point(
@@ -56,7 +57,27 @@ class Cell:
     def center(self):
         return self._center
 
+    @property
+    def has_top_wall(self) -> bool:
+        return self._has_top_wall
+
+    @has_top_wall.setter
+    def has_top_wall(self, val: bool) -> None:
+        self._has_top_wall = val
+
+    @property
+    def has_bottom_wall(self) -> bool:
+        return self._has_bottom_wall
+
+    @has_bottom_wall.setter
+    def has_bottom_wall(self, val: bool) -> None:
+        self._has_bottom_wall = val
+
     def draw(self) -> None:
+        """Renders cell walls on canvas. Draws white line for
+        a removed wall to enable apparent re-rendering in case
+        of wall deletion"""
+
         if self._has_left_wall:
             self._canvas.create_line(
                 self._upper_left.x,
@@ -75,6 +96,15 @@ class Cell:
                 fill="black",
                 width=2,
             )
+        else:
+            self._canvas.create_line(
+                self._upper_left.x,
+                self._bottom_right.y,
+                self._bottom_right.x,
+                self._bottom_right.y,
+                fill="white",
+                width=2,
+            )
         if self._has_right_wall:
             self._canvas.create_line(
                 self._bottom_right.x,
@@ -86,11 +116,20 @@ class Cell:
             )
         if self._has_top_wall:
             self._canvas.create_line(
-                self._bottom_right.x,
-                self._upper_left.y,
                 self._upper_left.x,
                 self._upper_left.y,
+                self._bottom_right.x,
+                self._upper_left.y,
                 fill="black",
+                width=2,
+            )
+        else:
+            self._canvas.create_line(
+                self._upper_left.x,
+                self._upper_left.y,
+                self._bottom_right.x,
+                self._upper_left.y,
+                fill="white",
                 width=2,
             )
 
@@ -200,3 +239,14 @@ class Maze:
     def _animate(self):
         self._win.redraw()
         time.sleep(0.05)
+
+    def _break_entrance_and_exit(self):
+        """Removes top wall of upper left cell and
+        bottom wall of lower right cell"""
+
+        maze_entrance = self._cells[0][0]
+        maze_exit = self._cells[-1][-1]
+        maze_entrance.has_top_wall = False
+        maze_exit.has_bottom_wall = False
+        self._win.draw_cell(maze_entrance)
+        self._win.draw_cell(maze_exit)
