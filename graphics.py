@@ -165,6 +165,7 @@ class Maze:
     _cell_size_y: int
     _win: Window
     _cells: list = None
+    _render: bool = True
 
     def __post_init__(self):
         self._cells = []
@@ -176,9 +177,10 @@ class Maze:
                 [Cell(_canvas=self._win.canvas) for x in range(0, self._num_cols)]
             )
 
-        for i, row in enumerate(self._cells):
-            for j, column in enumerate(row):
-                self._draw_cell(i, j)
+        if self._render:
+            for i, row in enumerate(self._cells):
+                for j, column in enumerate(row):
+                    self._draw_cell(i, j)
 
     def _draw_cell(self, i, j):
         # calculate x/y position of cell based on i, j and cell_size
