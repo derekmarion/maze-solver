@@ -337,15 +337,20 @@ class Maze:
                     self._cells[destination_cell_tuple[0]][
                         destination_cell_tuple[1]
                     ].has_top_wall = False
-                print(f"Moving {destination_cell_key}")
                 self._win.draw_cell(self._cells[i][j])
                 self._win.draw_cell(
                     self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]]
                 )
-                self._win.draw_move(
-                    self._cells[i][j],
-                    self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]],
-                )
+                # self._win.draw_move(
+                #     self._cells[i][j],
+                #     self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]],
+                # )
                 self._break_walls_r(
                     destination_cell_tuple[0], destination_cell_tuple[1]
                 )
+
+    def _reset_cells_visited(self):
+        for i in range(0, self._num_rows):
+            for j in range(0, self._num_cols):
+                self._cells[i][j].visited = False
+    
