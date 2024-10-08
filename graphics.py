@@ -1,6 +1,7 @@
 from tkinter import Tk, BOTH, Canvas
 from dataclasses import dataclass
 import time
+import random
 
 
 class Point:
@@ -45,7 +46,7 @@ class Cell:
     _upper_left: Point = Point(0, 0)
     _bottom_right: Point = Point(0, 0)
     _canvas: Canvas
-    _cell_walls = {"top": None, "right": None, "bottom": None, "left": None}
+    _visited: bool = False
 
     def __post_init__(self):
         self._center = Point(
@@ -73,6 +74,30 @@ class Cell:
     def has_bottom_wall(self, val: bool) -> None:
         self._has_bottom_wall = val
 
+    @property
+    def has_left_wall(self) -> bool:
+        return self._has_left_wall
+
+    @has_left_wall.setter
+    def has_left_wall(self, val: bool) -> None:
+        self._has_left_wall = val
+
+    @property
+    def has_right_wall(self) -> bool:
+        return self._has_right_wall
+
+    @has_right_wall.setter
+    def has_right_wall(self, val: bool) -> None:
+        self._has_right_wall = val
+
+    @property
+    def visited(self) -> bool:
+        return self._visited
+
+    @visited.setter
+    def visited(self, val: bool) -> None:
+        self._visited = val
+
     def draw(self) -> None:
         """Renders cell walls on canvas. Draws white line for
         a removed wall to enable apparent re-rendering in case
@@ -85,6 +110,15 @@ class Cell:
                 self._upper_left.x,
                 self._bottom_right.y,
                 fill="black",
+                width=2,
+            )
+        else:
+            self._canvas.create_line(
+                self._upper_left.x,
+                self._upper_left.y,
+                self._upper_left.x,
+                self._bottom_right.y,
+                fill="white",
                 width=2,
             )
         if self._has_bottom_wall:
@@ -112,6 +146,15 @@ class Cell:
                 self._bottom_right.x,
                 self._upper_left.y,
                 fill="black",
+                width=2,
+            )
+        else:
+            self._canvas.create_line(
+                self._bottom_right.x,
+                self._bottom_right.y,
+                self._bottom_right.x,
+                self._upper_left.y,
+                fill="white",
                 width=2,
             )
         if self._has_top_wall:
@@ -205,10 +248,13 @@ class Maze:
     _win: Window
     _cells: list = None
     _render: bool = True
+    _seed: int = None
 
     def __post_init__(self):
         self._cells = []
         self._create_cells()
+        if self._seed:
+            pass
 
     def _create_cells(self):
         for row in range(0, self._num_rows):
@@ -250,3 +296,56 @@ class Maze:
         maze_exit.has_bottom_wall = False
         self._win.draw_cell(maze_entrance)
         self._win.draw_cell(maze_exit)
+
+    def _break_walls_r(self, i, j):
+        self._cells[i][j].visited = True
+        while True:
+            not_visited_cells = {}
+            adjacent_cells = {
+                "left": (i, j - 1),
+                "right": (i, j + 1),
+                "down": (i + 1, j),
+                "up": (i - 1, j),
+            }
+            for direction, index in adjacent_cells.items():
+                if 0 <= index[0] < len(self._cells) and 0 <= index[1] < len(self._cells[0]) and not self._cells[index[0]][index[1]].visited:
+                    not_visited_cells[direction] = index
+            if len(not_visited_cells) == 0:
+                self._cells[i][j].draw()
+                return
+            else:
+                destination_cell_key = random.choice(list(not_visited_cells.keys()))
+                destination_cell_tuple = not_visited_cells[destination_cell_key]
+                #  Logic to determine which cell wall to remove
+                if destination_cell_key == "left":
+                    self._cells[i][j].has_left_wall = False
+                    self._cells[destination_cell_tuple[0]][
+                        destination_cell_tuple[1]
+                    ].has_right_wall = False
+                elif destination_cell_key == "right":
+                    self._cells[i][j].has_right_wall = False
+                    self._cells[destination_cell_tuple[0]][
+                        destination_cell_tuple[1]
+                    ].has_left_wall = False
+                elif destination_cell_key == "up":
+                    self._cells[i][j].has_top_wall = False
+                    self._cells[destination_cell_tuple[0]][
+                        destination_cell_tuple[1]
+                    ].has_bottom_wall = False
+                elif destination_cell_key == "down":
+                    self._cells[i][j].has_bottom_wall = False
+                    self._cells[destination_cell_tuple[0]][
+                        destination_cell_tuple[1]
+                    ].has_top_wall = False
+                print(f"Moving {destination_cell_key}")
+                self._win.draw_cell(self._cells[i][j])
+                self._win.draw_cell(
+                    self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]]
+                )
+                self._win.draw_move(
+                    self._cells[i][j],
+                    self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]],
+                )
+                self._break_walls_r(
+                    destination_cell_tuple[0], destination_cell_tuple[1]
+                )
