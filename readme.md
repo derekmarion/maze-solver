@@ -1,6 +1,3 @@
-# maze-solver
-Simple python program that optimally solves a randomly generated maze using DFS
-
 # Ideas for extending the project
 - Add other solving algorithms, like breadth-first search or A*
 - Make the visuals prettier, change the colors, etc
@@ -11,4 +8,3 @@ Simple python program that optimally solves a randomly generated maze using DFS
 - If you made it a game, allow the user to race an algorithm
 - Make it 3 dimensional
 - Time the various algorithms and see which ones are the fastest
-
