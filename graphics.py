@@ -308,7 +308,11 @@ class Maze:
                 "up": (i - 1, j),
             }
             for direction, index in adjacent_cells.items():
-                if 0 <= index[0] < len(self._cells) and 0 <= index[1] < len(self._cells[0]) and not self._cells[index[0]][index[1]].visited:
+                if (
+                    0 <= index[0] < len(self._cells)
+                    and 0 <= index[1] < len(self._cells[0])
+                    and not self._cells[index[0]][index[1]].visited
+                ):
                     not_visited_cells[direction] = index
             if len(not_visited_cells) == 0:
                 self._cells[i][j].draw()
@@ -341,10 +345,6 @@ class Maze:
                 self._win.draw_cell(
                     self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]]
                 )
-                # self._win.draw_move(
-                #     self._cells[i][j],
-                #     self._cells[destination_cell_tuple[0]][destination_cell_tuple[1]],
-                # )
                 self._break_walls_r(
                     destination_cell_tuple[0], destination_cell_tuple[1]
                 )
@@ -353,4 +353,75 @@ class Maze:
         for i in range(0, self._num_rows):
             for j in range(0, self._num_cols):
                 self._cells[i][j].visited = False
-    
+
+    def _solve_r(self, i: int, j: int) -> bool:
+        self._animate()
+        self._cells[i][j].visited = True
+        if self._cells[i][j] == self._cells[-1][-1]:
+            return True
+        not_visited_cells = {}
+        adjacent_cells = {
+            "left": (i, j - 1),
+            "right": (i, j + 1),
+            "down": (i + 1, j),
+            "up": (i - 1, j),
+        }
+        for direction, index in adjacent_cells.items():
+            if (
+                0 <= index[0] < len(self._cells)
+                and 0 <= index[1] < len(self._cells[0])
+                and not self._cells[index[0]][index[1]].visited
+            ):
+                not_visited_cells[direction] = index
+        for key, index in not_visited_cells.items():
+            #  Determine if path is open or closed
+            if (
+                key == "left"
+                and not self._cells[i][j].has_left_wall
+                and not self._cells[index[0]][index[1]].has_right_wall
+            ):
+                self._win.draw_move(self._cells[i][j], self._cells[index[0]][index[1]])
+                if self._solve_r(index[0], index[1]):
+                    return True
+                self._win.draw_move(
+                    self._cells[i][j], self._cells[index[0]][index[1]], undo=True
+                )
+            elif (
+                key == "right"
+                and not self._cells[i][j].has_right_wall
+                and not self._cells[index[0]][index[1]].has_left_wall
+            ):
+                self._win.draw_move(self._cells[i][j], self._cells[index[0]][index[1]])
+                if self._solve_r(index[0], index[1]):
+                    return True
+                self._win.draw_move(
+                    self._cells[i][j], self._cells[index[0]][index[1]], undo=True
+                )
+            elif (
+                key == "up"
+                and not self._cells[i][j].has_top_wall
+                and not self._cells[index[0]][index[1]].has_bottom_wall
+            ):
+                self._win.draw_move(self._cells[i][j], self._cells[index[0]][index[1]])
+                if self._solve_r(index[0], index[1]):
+                    return True
+                self._win.draw_move(
+                    self._cells[i][j], self._cells[index[0]][index[1]], undo=True
+                )
+            elif (
+                key == "down"
+                and not self._cells[i][j].has_bottom_wall
+                and not self._cells[index[0]][index[1]].has_top_wall
+            ):
+                self._win.draw_move(self._cells[i][j], self._cells[index[0]][index[1]])
+                if self._solve_r(index[0], index[1]):
+                    return True
+                self._win.draw_move(
+                    self._cells[i][j], self._cells[index[0]][index[1]], undo=True
+                )
+        return False
+
+    def solve(self) -> bool:
+        if self._solve_r(0, 0):
+            return True
+        return False
